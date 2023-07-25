@@ -18,7 +18,6 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      console.log('here');
       const tokenString = authToken.replace('Bearer ', '');
       const decodedToken: admin.auth.DecodedIdToken = await admin
         .auth()

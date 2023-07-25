@@ -1,46 +1,130 @@
 <template>
   <div id="app">
-    <input name="username" type="text" v-model.trim="loginForm.email" />
-    <br />
-    <input name="password" type="password" v-model.trim="loginForm.password" />
-    <br />
-    <button @click="login()">Login</button>
-    <br /><br />
-    <button @click="accessToken()">Access Token</button>
+    <div class="login-form">
+      <h2>Login</h2>
+      <div class="input-row">
+        <input
+          name="username"
+          type="text"
+          v-model.trim="loginForm.email"
+          placeholder="Email"
+        />
+      </div>
+      <div class="input-row">
+        <input
+          name="password"
+          type="password"
+          v-model.trim="loginForm.password"
+          placeholder="Password"
+        />
+      </div>
+      <div class="button-group">
+        <button @click="login()">Login</button>
+        <button @click="accessToken()">Access Token</button>
+      </div>
+      <button class="google-button" @click="signInWithGoogle()">
+        <span class="icon"><i class="fab fa-google"></i></span>
+        Sign in with Google
+      </button>
+    </div>
   </div>
 </template>
 
 <style lang="scss">
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-#nav {
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 320px;
   padding: 30px;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-family: 'Roboto', sans-serif;
+}
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+h2 {
+  margin-bottom: 20px;
+}
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+.input-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+  button + button {
+    margin-left: 5px;
   }
+}
+
+
+button {
+  flex: 1;
+  padding: 10px;
+  background-color: #42b983;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2e8540;
+}
+
+.google-button {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+}
+
+.google-button .icon {
+  margin-right: 10px;
+}
+
+.google-button:hover {
+  background-color: #0c7cd5;
 }
 </style>
 <script>
-import { auth } from "./auth/auth.service";
+import { auth, googleProvider } from './auth/auth.service';
 export default {
   data() {
     return {
       loginForm: {
-        email: "",
-        password: ""
-      }
+        email: '',
+        password: '',
+      },
     };
   },
   methods: {
@@ -48,7 +132,7 @@ export default {
       auth
         .signInWithEmailAndPassword(
           this.loginForm.email,
-          this.loginForm.password
+          this.loginForm.password,
         )
         .then(function(fbUser) {
           console.log(fbUser);
@@ -57,7 +141,24 @@ export default {
     async accessToken() {
       const token = await auth.currentUser?.getIdToken();
       console.log(token);
-    }
-  }
+    },
+    signInWithGoogle() {
+      auth
+        .signInWithPopup(googleProvider)
+        .then(function(result) {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          const token = result.credential.accessToken;
+          console.log('Google access token:', token);
+
+          // The signed-in user info.
+          const user = result.user;
+          console.log('Google user:', user);
+        })
+        .catch(function(error) {
+          // Handle Errors here.
+          console.error('Error signing in with Google:', error);
+        });
+    },
+  },
 };
 </script>
