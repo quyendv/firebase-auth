@@ -5,7 +5,12 @@ import { ResourcesModule } from './resources/resources.module';
 import { UserModule } from './users/user.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), ResourcesModule, UserModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ResourcesModule,
+    UserModule,
+    AuthModule,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
