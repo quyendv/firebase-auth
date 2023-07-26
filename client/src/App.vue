@@ -79,7 +79,6 @@ input {
   }
 }
 
-
 button {
   flex: 1;
   padding: 10px;
@@ -141,6 +140,14 @@ export default {
     async accessToken() {
       const token = await auth.currentUser?.getIdToken();
       console.log(token);
+
+      // Copy the token to the clipboard
+      const textArea = document.createElement('textarea');
+      textArea.value = token;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
     },
     signInWithGoogle() {
       auth
