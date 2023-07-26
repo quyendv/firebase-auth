@@ -27,6 +27,7 @@
         Sign in with Google
       </button>
     </div>
+    <div class="toast"></div>
   </div>
 </template>
 
@@ -114,9 +115,32 @@ button:hover {
 .google-button:hover {
   background-color: #0c7cd5;
 }
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+.toast.active {
+  opacity: 1;
+  bottom: 30px;
+}
 </style>
 <script>
 import { auth, googleProvider } from './auth/auth.service';
+
+let toastEl;
+let timeoutId;
 export default {
   data() {
     return {
@@ -148,6 +172,22 @@ export default {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
+
+      this.showToast('Copied token to clipboard');
+    },
+    showToast(message) {
+      if (toastEl) {
+        toastEl.classList.remove('active');
+      }
+
+      toastEl = document.querySelector('.toast');
+      toastEl.textContent = message;
+      toastEl.classList.add('active');
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        toastEl.classList.remove('active');
+      }, 1000);
     },
     signInWithGoogle() {
       auth
