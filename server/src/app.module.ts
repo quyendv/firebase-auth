@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ResourcesModule } from './resources/resources.module';
 import { UserModule } from './users/user.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { UserModule } from './users/user.module';
     UserModule,
     AuthModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

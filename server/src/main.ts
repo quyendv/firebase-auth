@@ -8,9 +8,9 @@ async function bootstrap() {
 
   admin.initializeApp({
     credential: admin.credential.cert({
-      private_key: firebaseConfig.private_key,
-      client_email: firebaseConfig.client_email,
-      project_id: firebaseConfig.project_id,
+      projectId: firebaseConfig.project_id,
+      clientEmail: firebaseConfig.client_email,
+      privateKey: firebaseConfig.private_key,
     } as Partial<admin.ServiceAccount>),
     // databaseURL: process.env.FIREBASE_DATABASE_URL,
   });

@@ -1,6 +1,10 @@
 import { UserCredential, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import { auth, googleProvider } from './configs/firebase.config';
+import { auth, googleProvider, messaging } from './configs/firebase.config';
+import { getToken, onMessage } from 'firebase/messaging';
+import Message from './components/Message';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast as toastLib, ToastContainer } from 'react-toastify';
 
 function App() {
   const [loginForm, setLoginForm] = useState({
@@ -62,46 +66,77 @@ function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
+  // Notification
+  async function requestPermission() {
+    //requesting permission using Notification API
+    const permission = await Notification.requestPermission();
+
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: import.meta.env.VITE_FCM_PUBLIC_KEY,
+      });
+
+      //We can send token to server
+      console.log('Token generated : ', token);
+    } else if (permission === 'denied') {
+      //notifications are blocked
+      alert('You denied for the notification');
+    }
+  }
+
+  onMessage(messaging, (payload) => {
+    console.log('incoming msg');
+    toastLib(<Message notification={payload.notification!} />);
+  });
+
+  useEffect(() => {
+    requestPermission();
+  }, []);
+  // Notification
   return (
-    <div id="app">
-      <div className="login-form">
-        <h2>Login</h2>
+    <>
+      <div id="app">
+        <div className="login-form">
+          <h2>Login</h2>
 
-        <div className="input-row">
-          <input
-            name="username"
-            type="text"
-            value={loginForm.email}
-            onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-            placeholder="Email"
-          />
+          <div className="input-row">
+            <input
+              name="username"
+              type="text"
+              value={loginForm.email}
+              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+              placeholder="Email"
+            />
+          </div>
+
+          <div className="input-row">
+            <input
+              name="password"
+              type="password"
+              value={loginForm.password}
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+              placeholder="Password"
+            />
+          </div>
+
+          <div className="button-group">
+            <button onClick={login}>Login</button>
+            <button onClick={accessToken}>Access Token</button>
+          </div>
+
+          <button className="google-button" onClick={signInWithGoogle}>
+            <span className="icon">
+              <i className="fab fa-google"></i>
+            </span>
+            Sign in with Google
+          </button>
         </div>
 
-        <div className="input-row">
-          <input
-            name="password"
-            type="password"
-            value={loginForm.password}
-            onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-            placeholder="Password"
-          />
-        </div>
-
-        <div className="button-group">
-          <button onClick={login}>Login</button>
-          <button onClick={accessToken}>Access Token</button>
-        </div>
-
-        <button className="google-button" onClick={signInWithGoogle}>
-          <span className="icon">
-            <i className="fab fa-google"></i>
-          </span>
-          Sign in with Google
-        </button>
+        <div className="toast">{toast}</div>
       </div>
 
-      <div className="toast">{toast}</div>
-    </div>
+      <ToastContainer />
+    </>
   );
 }
 
