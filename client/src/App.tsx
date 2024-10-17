@@ -1,4 +1,4 @@
-import { UserCredential, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { UserCredential, signInWithEmailAndPassword, signInWithPopup, signInAnonymously, signOut } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { auth, googleProvider, messaging } from './configs/firebase.config';
 import { getToken, onMessage } from 'firebase/messaging';
@@ -61,6 +61,29 @@ function App() {
       });
   };
 
+  const signInAnoFn = () => {
+    signInAnonymously(auth)
+      .then(async (result: UserCredential) => {
+        const token = await result.user.getIdToken();
+        console.log('Anonymous access token:', token);
+
+        console.log('Anonymous user:', result.user);
+      })
+      .catch((error) => {
+        console.error('Error signing in anonymously:', error);
+      });
+  };
+
+  const signOutFn = () => {
+    signOut(auth)
+      .then(() => {
+        console.log('Signed out');
+      })
+      .catch((error) => {
+        console.error('Error signing out:', error);
+      });
+  };
+
   useEffect(() => {
     const id = setTimeout(clearToast, 1000);
     return () => clearTimeout(id);
@@ -93,6 +116,7 @@ function App() {
     requestPermission();
   }, []);
   // Notification
+
   return (
     <>
       <div id="app">
@@ -129,6 +153,14 @@ function App() {
               <i className="fab fa-google"></i>
             </span>
             Sign in with Google
+          </button>
+
+          <button className="google-button" onClick={signInAnoFn}>
+            Sign in anonymously
+          </button>
+
+          <button className="google-button" onClick={signOutFn}>
+            Sign out
           </button>
         </div>
 
