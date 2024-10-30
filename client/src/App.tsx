@@ -1,10 +1,11 @@
 import { UserCredential, signInWithEmailAndPassword, signInWithPopup, signInAnonymously, signOut } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import { auth, googleProvider, messaging } from './configs/firebase.config';
+import { auth, facebookProvider, googleProvider, messaging } from './configs/firebase.config';
 import { getToken, onMessage } from 'firebase/messaging';
 import Message from './components/Message';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast as toastLib, ToastContainer } from 'react-toastify';
+import { FacebookAuthProvider } from 'firebase/auth/cordova';
 
 function App() {
   const [loginForm, setLoginForm] = useState({
@@ -71,6 +72,21 @@ function App() {
       })
       .catch((error) => {
         console.error('Error signing in anonymously:', error);
+      });
+  };
+
+  const signInFacebook = () => {
+    signInWithPopup(auth, facebookProvider)
+      .then(async (result: UserCredential) => {
+        const token = await result.user.getIdToken();
+        console.log('Facebook access token:', token);
+
+        const credential = FacebookAuthProvider.credentialFromResult(result);
+        console.log(result, credential);
+      })
+      .catch((error) => {
+        const credential = FacebookAuthProvider.credentialFromError(error);
+        console.error('Error signing in with Facebook:', error, credential);
       });
   };
 
@@ -153,6 +169,13 @@ function App() {
               <i className="fab fa-google"></i>
             </span>
             Sign in with Google
+          </button>
+
+          <button className="google-button" onClick={signInFacebook}>
+            <span className="icon">
+              <i className="fab fa-google"></i>
+            </span>
+            Sign in with Facebook
           </button>
 
           <button className="google-button" onClick={signInAnoFn}>

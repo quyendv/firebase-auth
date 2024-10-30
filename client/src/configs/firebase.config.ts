@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { getMessaging /* getToken, onMessage */ } from 'firebase/messaging';
 
 const firebaseConfig = {
@@ -15,6 +15,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
+// facebookProvider.setCustomParameters({
+//   display: 'popup',
+// });
+
+// auth.languageCode = 'vi';
 
 const messaging = getMessaging(app);
 
@@ -49,4 +57,4 @@ const messaging = getMessaging(app);
 //   });
 // })();
 
-export { auth, googleProvider, messaging };
+export { auth, googleProvider, facebookProvider, messaging };
