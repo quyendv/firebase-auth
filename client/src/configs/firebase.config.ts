@@ -18,6 +18,7 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 facebookProvider.addScope('email');
 facebookProvider.addScope('public_profile');
+facebookProvider.addScope('user_friends');
 // facebookProvider.setCustomParameters({
 //   display: 'popup',
 // });

@@ -1,198 +1,135 @@
-import { UserCredential, signInWithEmailAndPassword, signInWithPopup, signInAnonymously, signOut } from 'firebase/auth';
-import { useEffect, useState } from 'react';
-import { auth, facebookProvider, googleProvider, messaging } from './configs/firebase.config';
-import { getToken, onMessage } from 'firebase/messaging';
-import Message from './components/Message';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast as toastLib, ToastContainer } from 'react-toastify';
-import { FacebookAuthProvider } from 'firebase/auth/cordova';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Toaster } from '@/components/ui/toaster';
+import { useNotifications } from '@/hooks/useNotifications';
+import { onMessage } from 'firebase/messaging';
+import { Facebook, LogOut, Mail } from 'lucide-react';
+import { useEffect } from 'react';
+import { ToastContainer, toast as toastLib } from 'react-toastify';
+import NotificationMessage from './components/NotificationMessage';
+import { messaging } from './configs/firebase.config';
+import { useAuth } from './hooks/useAuth';
 
-function App() {
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
-  });
+const App = () => {
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    handleEmailLogin,
+    handleGoogleLogin,
+    handleFacebookLogin,
+    handleAnonymousLogin,
+    handleSignOut,
+    handleCopyToken,
+    isLoading,
+  } = useAuth();
 
-  const [toast, setToast] = useState<string>('');
-
-  const login = () => {
-    signInWithEmailAndPassword(auth, loginForm.email, loginForm.password).then((fbUser: UserCredential) => {
-      console.log(fbUser);
-    });
-  };
-
-  const accessToken = async () => {
-    const token = await auth.currentUser?.getIdToken();
-    console.log(token);
-
-    // Copy token
-    if (token) {
-      const textArea = document.createElement('textarea');
-      textArea.value = token;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-
-      showToast('Copied token to clipboard');
-    }
-  };
-
-  const showToast = (message: string) => {
-    document.querySelector('.toast')?.classList.add('active');
-    setToast(message);
-  };
-
-  const clearToast = () => {
-    document.querySelector('.toast')?.classList.remove('active');
-    setToast('');
-  };
-
-  const signInWithGoogle = () => {
-    signInWithPopup(auth, googleProvider)
-      .then(async (result: UserCredential) => {
-        const token = await result.user.getIdToken();
-        console.log('Google access token:', token);
-
-        const user = result.user;
-        console.log('Google user:', user);
-      })
-      .catch((error) => {
-        console.error('Error signing in with Google:', error);
-      });
-  };
-
-  const signInAnoFn = () => {
-    signInAnonymously(auth)
-      .then(async (result: UserCredential) => {
-        const token = await result.user.getIdToken();
-        console.log('Anonymous access token:', token);
-
-        console.log('Anonymous user:', result.user);
-      })
-      .catch((error) => {
-        console.error('Error signing in anonymously:', error);
-      });
-  };
-
-  const signInFacebook = () => {
-    signInWithPopup(auth, facebookProvider)
-      .then(async (result: UserCredential) => {
-        const token = await result.user.getIdToken();
-        console.log('Facebook access token:', token);
-
-        const credential = FacebookAuthProvider.credentialFromResult(result);
-        console.log(result, credential);
-      })
-      .catch((error) => {
-        const credential = FacebookAuthProvider.credentialFromError(error);
-        console.error('Error signing in with Facebook:', error, credential);
-      });
-  };
-
-  const signOutFn = () => {
-    signOut(auth)
-      .then(() => {
-        console.log('Signed out');
-      })
-      .catch((error) => {
-        console.error('Error signing out:', error);
-      });
-  };
-
-  useEffect(() => {
-    const id = setTimeout(clearToast, 1000);
-    return () => clearTimeout(id);
-  }, [toast]);
-
-  // Notification
-  async function requestPermission() {
-    //requesting permission using Notification API
-    const permission = await Notification.requestPermission();
-
-    if (permission === 'granted') {
-      const token = await getToken(messaging, {
-        vapidKey: import.meta.env.VITE_FCM_PUBLIC_KEY,
-      });
-
-      //We can send token to server
-      console.log('Token generated : ', token);
-    } else if (permission === 'denied') {
-      //notifications are blocked
-      alert('You denied for the notification');
-    }
-  }
-
-  onMessage(messaging, (payload) => {
-    console.log('incoming msg');
-    toastLib(<Message notification={payload.notification!} />);
-  });
+  const { requestPermission } = useNotifications();
 
   useEffect(() => {
     requestPermission();
-  }, []);
-  // Notification
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log('incoming msg', payload);
+      if (payload.notification) {
+        toastLib(<NotificationMessage notification={payload.notification} />, {
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          className: 'notification-toast',
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [requestPermission]);
 
   return (
-    <>
-      <div id="app">
-        <div className="login-form">
-          <h2>Login</h2>
-
-          <div className="input-row">
-            <input
-              name="username"
-              type="text"
-              value={loginForm.email}
-              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-              placeholder="Email"
-            />
-          </div>
-
-          <div className="input-row">
-            <input
-              name="password"
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <Card className="w-[380px]">
+        <CardHeader>
+          <CardTitle>Welcome back</CardTitle>
+          <CardDescription>Sign in to your account to continue</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Email/Password Form */}
+          <div className="space-y-2">
+            <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
               type="password"
-              value={loginForm.password}
-              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+            <Button className="w-full" onClick={handleEmailLogin} disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in with Email'}
+            </Button>
           </div>
 
-          <div className="button-group">
-            <button onClick={login}>Login</button>
-            <button onClick={accessToken}>Access Token</button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            </div>
           </div>
 
-          <button className="google-button" onClick={signInWithGoogle}>
-            <span className="icon">
-              <i className="fab fa-google"></i>
-            </span>
-            Sign in with Google
-          </button>
+          {/* Social Login Buttons */}
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
+              <svg
+                className="mr-2 h-4 w-4"
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fab"
+                data-icon="google"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 488 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+                ></path>
+              </svg>
+              Sign in with Google
+            </Button>
 
-          <button className="google-button" onClick={signInFacebook}>
-            <span className="icon">
-              <i className="fab fa-google"></i>
-            </span>
-            Sign in with Facebook
-          </button>
+            <Button variant="outline" className="w-full" onClick={handleFacebookLogin} disabled={isLoading}>
+              <Facebook className="mr-2 h-4 w-4" />
+              Sign in with Facebook
+            </Button>
 
-          <button className="google-button" onClick={signInAnoFn}>
-            Sign in anonymously
-          </button>
+            <Button variant="outline" className="w-full" onClick={handleAnonymousLogin} disabled={isLoading}>
+              <Mail className="mr-2 h-4 w-4" />
+              Sign in Anonymously
+            </Button>
+          </div>
 
-          <button className="google-button" onClick={signOutFn}>
-            Sign out
-          </button>
-        </div>
+          {/* Token and Sign Out */}
+          <div className="space-y-2">
+            <Button variant="secondary" className="w-full" onClick={handleCopyToken}>
+              Copy Access Token
+            </Button>
 
-        <div className="toast">{toast}</div>
-      </div>
+            <Button variant="destructive" className="w-full" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <ToastContainer />
-    </>
+      <Toaster />
+    </div>
   );
-}
+};
 
 export default App;
