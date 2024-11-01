@@ -50,6 +50,17 @@ const BulkAccountCreator = () => {
         await auth.signOut();
       }
 
+      toast({
+        title: 'Success',
+        description: `Successfully generated ${numAccounts} anonymous accounts!`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to generate accounts: ' + (error as Error).message,
+      });
+    } finally {
       // Create and download JSON file
       const jsonData = JSON.stringify(accounts, null, 2);
       const blob = new Blob([jsonData], { type: 'application/json' });
@@ -62,17 +73,6 @@ const BulkAccountCreator = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: 'Success',
-        description: `Successfully generated ${numAccounts} anonymous accounts!`,
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to generate accounts: ' + (error as Error).message,
-      });
-    } finally {
       setIsGenerating(false);
       setProgress(0);
     }
