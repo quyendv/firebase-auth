@@ -86,7 +86,7 @@ body {
   }
 }
 
-/* Override styles */
+/* ** Notification **  */
 .Toastify__toast {
   @apply bg-background border rounded-lg shadow-lg !important;
 }
@@ -127,4 +127,25 @@ body {
 
 .notification-toast .Toastify__toast-body {
   @apply p-0 !important;
+}
+
+/* ** Animation ** */
+@keyframes custom-bounce {
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-custom-bounce {
+  animation: custom-bounce 1s infinite;
+}
+
+.animate-custom-bounce:hover {
+  animation-play-state: paused;
 }
