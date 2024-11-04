@@ -24,6 +24,8 @@ export const useAuth = () => {
   const handleSuccess = async (result: UserCredential) => {
     const token = await result.user.getIdToken();
     console.log('Access token:', token);
+    console.log('Refresh token:', result.user.refreshToken);
+    console.log("User's info:", result.user);
 
     toast({
       title: 'Success',
@@ -109,6 +111,27 @@ export const useAuth = () => {
     }
   };
 
+  const handleCopyRefreshToken = async () => {
+    try {
+      const refreshToken = auth.currentUser?.refreshToken;
+      if (refreshToken) {
+        await navigator.clipboard.writeText(refreshToken);
+        toast({
+          title: 'Success',
+          description: 'Refresh token copied to clipboard!',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'No user is signed in',
+        });
+      }
+    } catch (error: any) {
+      handleError(error);
+    }
+  };
+
   return {
     email,
     setEmail,
@@ -121,5 +144,6 @@ export const useAuth = () => {
     handleAnonymousLogin,
     handleSignOut,
     handleCopyToken,
+    handleCopyRefreshToken,
   };
 };

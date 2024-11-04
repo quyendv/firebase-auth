@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Toaster } from '@/components/ui/toaster';
 import { useNotifications } from '@/hooks/useNotifications';
 import { onMessage } from 'firebase/messaging';
-import { Facebook, LogOut, Mail } from 'lucide-react';
+import { Copy, Facebook, LogOut, Mail } from 'lucide-react';
 import { useEffect } from 'react';
 import { ToastContainer, toast as toastLib } from 'react-toastify';
 import NotificationMessage from './components/NotificationMessage';
@@ -24,6 +24,7 @@ const App = () => {
     handleAnonymousLogin,
     handleSignOut,
     handleCopyToken,
+    handleCopyRefreshToken,
     isLoading,
   } = useAuth();
 
@@ -68,7 +69,7 @@ const App = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <Button className="w-full" onClick={handleEmailLogin} disabled={isLoading}>
+              <Button className="w-full" onClick={handleEmailLogin} disabled={isLoading || !email || !password}>
                 {isLoading ? 'Signing in...' : 'Sign in with Email'}
               </Button>
             </div>
@@ -116,9 +117,15 @@ const App = () => {
 
             {/* Token and Sign Out */}
             <div className="space-y-2">
-              <Button variant="secondary" className="w-full" onClick={handleCopyToken}>
-                Copy Access Token
-              </Button>
+              <div className="flex gap-3 [&>*]:flex-1">
+                <Button variant="secondary" className="w-full" onClick={handleCopyToken}>
+                  <Copy /> Access Token
+                </Button>
+
+                <Button variant="secondary" className="w-full" onClick={handleCopyRefreshToken}>
+                  <Copy /> Refresh Token
+                </Button>
+              </div>
 
               <Button variant="destructive" className="w-full" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
