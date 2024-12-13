@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import * as admin from 'firebase-admin';
 import { AppModule } from './app.module';
 import { firebaseConfig } from './configs/firebase.config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   admin.initializeApp({
     credential: admin.credential.cert({

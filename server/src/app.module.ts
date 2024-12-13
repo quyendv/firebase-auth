@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ResourcesModule } from './resources/resources.module';
 import { UserModule } from './users/user.module';
 import { AppController } from './app.controller';
+import { NotificationModule } from './notifications/notification.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AppController } from './app.controller';
     ResourcesModule,
     UserModule,
     AuthModule,
+    NotificationModule,
   ],
   controllers: [AppController],
 })
